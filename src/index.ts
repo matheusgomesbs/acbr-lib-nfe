@@ -1,5 +1,6 @@
 import koffi from 'koffi';
 
+import { libError } from '@errors';
 import { IACBrLibNFe } from '@interfaces';
 import { ConsultRegistrationData, DFeDefaultData, DFeDistributionData, DFeDistributionKeyData, FileOrContentData, GenerateKeyData, GetConfigItemValueData, GetPathData, IACBrLibNFeResponse, MakeUnusableData, NFeCancelData, NFeConsultData, NFePositionData, NFeSaveData, NFeSendData, PrintData, ReadSaveImportConfigData, SaveConfigItemValueData, SendMailDefaultData, SendMailEventMailData, UnusablePrintSaveData } from '@types';
 
@@ -29,7 +30,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Biblioteca foi inicializada corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Biblioteca foi inicializada corretamente.'
     }
   }
 
@@ -39,7 +40,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Biblioteca foi finalizada corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Biblioteca foi finalizada corretamente.'
     }
   }
 
@@ -49,7 +50,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -59,7 +60,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -69,7 +70,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -80,7 +81,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Configurações foram lidas corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Configurações foram lidas corretamente.'
     }
   }
 
@@ -91,7 +92,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Configurações foram gravadas corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Configurações foram gravadas corretamente.'
     }
   }
 
@@ -101,7 +102,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -111,7 +112,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Configuração gravadas corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Configuração gravadas corretamente.'
     }
   }
 
@@ -122,7 +123,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Configuração importada corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Configuração importada corretamente.'
     }
   }
 
@@ -132,7 +133,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -142,7 +143,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Arquivo/Conteúdo XML carregado corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Arquivo/Conteúdo XML carregado corretamente.'
     }
   }
 
@@ -152,7 +153,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Arquivo/Conteúdo INI carregado corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Arquivo/Conteúdo INI carregado corretamente.'
     }
   }
 
@@ -162,7 +163,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
   
@@ -172,7 +173,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Arquivo XML gravado corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Arquivo XML gravado corretamente.'
     }
   }
   
@@ -182,7 +183,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
   
@@ -192,7 +193,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Arquivo INI gravado corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Arquivo INI gravado corretamente.'
     }
   }
 
@@ -202,7 +203,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Arquivo/Conteúdo XML de evento carregado corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Arquivo/Conteúdo XML de evento carregado corretamente.'
     }
   }
 
@@ -212,7 +213,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Arquivo/Conteúdo INI de evento carregado corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Arquivo/Conteúdo INI de evento carregado corretamente.'
     }
   }
 
@@ -222,7 +223,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Lista de notas foi limpo corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Lista de notas foi limpo corretamente.'
     }
   }
 
@@ -232,7 +233,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Lista de eventos foi limpo corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Lista de eventos foi limpo corretamente.'
     }
   }
 
@@ -242,7 +243,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Notas carregadas assinadas corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Notas carregadas assinadas corretamente.'
     }
   }
 
@@ -252,7 +253,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Notas carregadas validadas corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Notas carregadas validadas corretamente.'
     }
   }
 
@@ -262,7 +263,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -272,7 +273,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -282,7 +283,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -292,7 +293,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -302,7 +303,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
   getEventPath(options: { eventCode: number }): IACBrLibNFeResponse {
@@ -311,7 +312,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -321,7 +322,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -331,7 +332,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -341,7 +342,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -351,7 +352,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
   
@@ -361,7 +362,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -371,7 +372,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -381,7 +382,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -391,7 +392,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -401,7 +402,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -411,7 +412,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -421,7 +422,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -431,7 +432,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -441,7 +442,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'E-mail enviado corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'E-mail enviado corretamente.'
     }
   }
 
@@ -451,7 +452,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'E-mail enviado corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'E-mail enviado corretamente.'
     }
   }
 
@@ -461,7 +462,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Impresso corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Impresso corretamente.'
     }
   }
 
@@ -471,7 +472,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'PDF Impresso corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'PDF Impresso corretamente.'
     }
   }
 
@@ -481,7 +482,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : this.ACBrResponse.toString()
+      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
     }
   }
 
@@ -491,7 +492,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Evento impresso corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Evento impresso corretamente.'
     }
   }
 
@@ -501,7 +502,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'PDF do evento impresso corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'PDF do evento impresso corretamente.'
     }
   }
 
@@ -511,7 +512,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'PDF do evento impresso corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'PDF do evento impresso corretamente.'
     }
   }
 
@@ -521,7 +522,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'Inutilização impressa corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'Inutilização impressa corretamente.'
     }
   }
 
@@ -531,7 +532,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'PDF da inutilização impresso corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'PDF da inutilização impresso corretamente.'
     }
   }
 
@@ -541,27 +542,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
 
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? this.libError(data) : 'PDF da inutilização salvo corretamente.'
+      ACBrResponse: data !== 0 ? libError(data) : 'PDF da inutilização salvo corretamente.'
     }
-  }
-
-  private libError(response: number) {
-    let message:string = 'Mensagem não catalogada!';
-    
-    if(response === -1) message = '[ERROR] Houve falhas na inicialização da biblioteca.';
-    if(response === -2) message = '[ERROR] Houve falhas na finalização da biblioteca.';
-    if(response === -3) message = '[ERROR] Houve erro ao ler a configuração informada.';
-    if(response === -4) message = '[ERROR] Valor informado incorreto.';
-    if(response === -5) message = '[ERROR] Não foi possível localizar o arquivo informado.';
-    if(response === -6) message = '[ERROR] Não foi possível encontrar o diretório do arquivo.';
-    if(response === -7) message = '[ERROR] Erro na comunicação HTTP.';
-    if(response === -10) message = '[ERROR] Houve falhas na execução do método.';
-    if(response === -11) message = '[ERROR] Falha na validação do xml.';
-    if(response === -12) message = '[ERROR] Falha na validação da chave passada.';
-    if(response === -13) message = '[ERROR] Índice passado não se encontra no intervalo.';
-    if(response === -14) message = '[ERROR] Houve um erro ao gerar o xml.';
-    if(response === -17) message = '[ERROR] Nenhuma NF-e foi adicionada ao lote ou adicionado mais de 50 NFe.';
-  
-    return message
   }
 }
