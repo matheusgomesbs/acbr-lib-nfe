@@ -1,4 +1,4 @@
-import { ACBrLibNFe, IACBrLibNFeOptions } from '@ACBrLibNFe';
+import { ACBrLibNFe, IACBrLibNFeOptions } from '@index';
 import path from 'node:path';
 
 const ACBrLibPath = path.join(__dirname, 'bin', 'StdCall', 'ACBrNFe64.dll');
@@ -197,7 +197,7 @@ console.log('=>', init.ACBrResponse);
 
 // Inutilizar NFe
 // const libMakeUnusable = NFe.makeUnusable({
-//   CNPJ: '07908968000160',
+//   document: '07908968000160',
 //   justification: 'QUEBRA DE SEQUENCIA',
 //   year: 2023,
 //   model: NFeModelEnum.NFe,
@@ -220,7 +220,7 @@ console.log('=>', init.ACBrResponse);
 // const libCancel = NFe.cancel({
 //   NFeKey: '23220617652160000118550010000055321001765211',
 //   justification: 'ERRO DE DIGITAÇÃO',
-//   CNPJ: '07908968000160',
+//   document: '07908968000160',
 //   batchNumber: 1
 // });
 // console.log('=>', libCancel.ACBrResponse);
@@ -234,7 +234,7 @@ console.log('=>', init.ACBrResponse);
 // Distribuição DFe
 // const libDFeDistribution = NFe.DFeDistribution({
 //   UFCode: UFCodeEnum.CE,
-//   CNPJCPF: '07908968000160',
+//   document: '07908968000160',
 //   NSU: '000000000000000',
 //   fileOrContent: path.join(__dirname, 'lib', 'xml', 'distribuicaoDFe')
 // })
@@ -243,7 +243,7 @@ console.log('=>', init.ACBrResponse);
 // Distribuição DFe Por Ult NSU
 // const libDFeDistributionLastNSU = NFe.DFeDistributionLastNSU({
 //   UFCode: UFCodeEnum.CE,
-//   CNPJCPF: '07908968000160',
+//   document: '07908968000160',
 //   NSU: '000000000000055'
 // })
 // console.log('=>', libDFeDistributionLastNSU.ACBrResponse);
@@ -251,7 +251,7 @@ console.log('=>', init.ACBrResponse);
 // Distribuição DFe Por NSU
 // const libDFeDistributionNSU = NFe.DFeDistributionNSU({
 //   UFCode: UFCodeEnum.CE,
-//   CNPJCPF: '07908968000160',
+//   document: '07908968000160',
 //   NSU: '0'
 // })
 // console.log('=>', libDFeDistributionNSU.ACBrResponse);
@@ -259,7 +259,7 @@ console.log('=>', init.ACBrResponse);
 // Distribuição DFe Por Chave
 // const libDFeDistributionKey = NFe.DFeDistributionKey({
 //   UFCode: UFCodeEnum.CE,
-//   CNPJCPF: '07908968000160',
+//   document: '07908968000160',
 //   key: '23220617652160000118550010000055321001765211'
 // })
 // console.log('=>', libDFeDistributionKey.ACBrResponse);
