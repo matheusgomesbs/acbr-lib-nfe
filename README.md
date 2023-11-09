@@ -79,4 +79,4 @@ Você também pode ver a lista de todos os [colaboradores](https://github.com/ma
 
 ## 📄 Licença
 
-Este projeto está sob a licença (MIT) - veja o arquivo [LICENSE.md](https://github.com/matheusgomesbs/acbr-lib-nfe/licenca) para detalhes.
+Este projeto está sob a licença (MIT) - veja o arquivo [LICENSE.md](https://github.com/matheusgomesbs/acbr-lib-nfe/blob/main/LICENSE) para detalhes.
