@@ -75,7 +75,7 @@ Versão 0.0.1
 * **Matheus Gomes** - [matheusgomesbs](https://github.com/matheusgomesbs)
 * **Koromix**- *Biblioteca de comuicação com .dll* - [Koffi](https://github.com/Koromix/koffi)
 
-Você também pode ver a lista de todos os [colaboradores](https://github.com/matheusgomesbs/acbr-lib-nfe/colaboradores) que participaram deste projeto.
+Você também pode ver a lista de todos os [colaboradores](https://github.com/matheusgomesbs/acbr-lib-nfe/graphs/contributors) que participaram deste projeto.
 
 ## 📄 Licença
 
