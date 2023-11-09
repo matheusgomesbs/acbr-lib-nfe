@@ -150,7 +150,7 @@ console.log('=>', init.ACBrResponse);
 //   numberNFe: 77631,
 //   typeEmission: TypeEmissionEnum.teNormal,
 //   dateEmission: '22/09/2022',
-//   document: '03507744000195'
+//   document: '00000000000000'
 // });
 // console.log('=>', libGenerateKey.ACBrResponse);
 
@@ -176,7 +176,7 @@ console.log('=>', init.ACBrResponse);
 
 // Consultar um NFe
 // const libConsult = NFe.consult({
-//   keyOrContent: '23220617652160000118550010000055321001765211',
+//   keyOrContent: '00000000000000000000000000000000000000000000',
 //   isEventsExtract: true
 // });
 // console.log('=>', libConsult.ACBrResponse);
@@ -190,14 +190,14 @@ console.log('=>', init.ACBrResponse);
 // Consultar cadastro
 // const libConsultRegistration = NFe.consultRegistration({
 //   UF: 'CE',
-//   document: '07908968000160',
+//   document: '00000000000000',
 //   isIECode: false
 // });
 // console.log('=>', libConsultRegistration.ACBrResponse);
 
 // Inutilizar NFe
 // const libMakeUnusable = NFe.makeUnusable({
-//   document: '07908968000160',
+//   document: '00000000000000',
 //   justification: 'QUEBRA DE SEQUENCIA',
 //   year: 2023,
 //   model: NFeModelEnum.NFe,
@@ -218,9 +218,9 @@ console.log('=>', init.ACBrResponse);
 
 // Cancelar NFe
 // const libCancel = NFe.cancel({
-//   NFeKey: '23220617652160000118550010000055321001765211',
+//   NFeKey: '00000000000000000000000000000000000000000000',
 //   justification: 'ERRO DE DIGITAÇÃO',
-//   document: '07908968000160',
+//   document: '00000000000000',
 //   batchNumber: 1
 // });
 // console.log('=>', libCancel.ACBrResponse);
@@ -234,7 +234,7 @@ console.log('=>', init.ACBrResponse);
 // Distribuição DFe
 // const libDFeDistribution = NFe.DFeDistribution({
 //   UFCode: UFCodeEnum.CE,
-//   document: '07908968000160',
+//   document: '00000000000000',
 //   NSU: '000000000000000',
 //   fileOrContent: path.join(__dirname, 'lib', 'xml', 'distribuicaoDFe')
 // })
@@ -243,7 +243,7 @@ console.log('=>', init.ACBrResponse);
 // Distribuição DFe Por Ult NSU
 // const libDFeDistributionLastNSU = NFe.DFeDistributionLastNSU({
 //   UFCode: UFCodeEnum.CE,
-//   document: '07908968000160',
+//   document: '00000000000000',
 //   NSU: '000000000000055'
 // })
 // console.log('=>', libDFeDistributionLastNSU.ACBrResponse);
@@ -251,7 +251,7 @@ console.log('=>', init.ACBrResponse);
 // Distribuição DFe Por NSU
 // const libDFeDistributionNSU = NFe.DFeDistributionNSU({
 //   UFCode: UFCodeEnum.CE,
-//   document: '07908968000160',
+//   document: '00000000000000',
 //   NSU: '0'
 // })
 // console.log('=>', libDFeDistributionNSU.ACBrResponse);
@@ -259,8 +259,8 @@ console.log('=>', init.ACBrResponse);
 // Distribuição DFe Por Chave
 // const libDFeDistributionKey = NFe.DFeDistributionKey({
 //   UFCode: UFCodeEnum.CE,
-//   document: '07908968000160',
-//   key: '23220617652160000118550010000055321001765211'
+//   document: '00000000000000',
+//   key: '00000000000000000000000000000000000000000000'
 // })
 // console.log('=>', libDFeDistributionKey.ACBrResponse);
 
