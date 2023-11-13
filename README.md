@@ -10,15 +10,15 @@ git clone https://github.com/matheusgomesbs/acbr-lib-nfe.git
 
 ### 🔧 Instalação
 
-Uma série de exemplos passo-a-passo que informam o que você deve executar para ter um ambiente de desenvolvimento em execução.
-
-Diga como essa etapa será:
+Siga os passos para instalar e executar a biblioteca
 
 ```
 pnpm install
 ```
 
-Termine com um exemplo de como obter dados do sistema ou como usá-los para uma pequena demonstração.
+```
+pnpm dev
+```
 
 ## 📦 Implantação
 Veja o exemplo que esta dentro da pasta "exempale-code", para saber quais funções estão disponíveis.
@@ -55,8 +55,6 @@ const finish = NFe.finish();
 console.log('=>', finish.ACBrResponse);
 ```
 ## 🛠️ Construído com
-
-Mencione as ferramentas que você usou para criar seu projeto
 
 * [NodeJS](https://nodejs.org/) - Node.js® is an open-source, cross-platform JavaScript runtime environment.
 * [TypeScript](https://www.typescriptlang.org/) - TypeScript é uma linguagem de programação fortemente tipada que se baseia em JavaScript, oferecendo melhores ferramentas em qualquer escala.
