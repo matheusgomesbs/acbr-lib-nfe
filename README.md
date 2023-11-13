@@ -21,8 +21,7 @@ pnpm install
 Termine com um exemplo de como obter dados do sistema ou como usá-los para uma pequena demonstração.
 
 ## 📦 Implantação
-Veja o exemplo que esta dentro de "modules/user", para criar módulos com as
-funcionalidades que deseja. Para expor seus módulos utilize o arquivo "context.ts" que esta dentro da pasta "preload".
+Veja o exemplo que esta dentro da pasta "exempale-code", para saber quais funções estão disponíveis.
 
 Exemplo: 
 ```typescript
