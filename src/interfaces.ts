@@ -59,3 +59,11 @@ export interface IACBrLibNFe {
   printUnusablePDF(options: UnusablePrintSaveData): IACBrLibNFeResponse;
   saveUnusablePDF(options: UnusablePrintSaveData): IACBrLibNFeResponse;
 }
+
+export interface INFe {
+  consult(): void;
+  send(): void;
+  cancel(): void;
+  unusable(): void;
+  correction(): void;
+}
