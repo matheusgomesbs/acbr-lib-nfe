@@ -1,5 +1,15 @@
 import { NFeModelEnum, PathTypeEnum, PrintDataBoolEnum, TypeEmissionEnum, UFCodeEnum, UFInitialsEnum } from "@enums";
 
+export type ACBrLibNFeData = {
+  ACBrLibPath: string;
+  ACBrOptions: IACBrLibNFeOptions;
+}
+
+export interface IACBrLibNFeOptions{
+  fileConfigINI: string;
+  keyCrypt?: string;
+}
+
 export type IACBrLibNFeResponse = {
   ACBrCode: number;
   ACBrResponse: string | object;
@@ -31,7 +41,7 @@ export type PrintData = {
 }
 
 export type ReadSaveImportConfigData = {
-  fileConfigINI: string;
+  fileConfigINI?: string;
 }
 
 export type GetConfigItemValueData = {

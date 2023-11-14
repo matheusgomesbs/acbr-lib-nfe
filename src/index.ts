@@ -1,3 +1,4 @@
+import { ACBrLibNFe } from "@ACBrLibNFe";
 import { INFe } from "@interfaces";
 import { NFeConsultData } from "@types";
 
@@ -35,3 +36,11 @@ export class NFe implements INFe {
   }
 
 }
+
+const teste = new ACBrLibNFe({
+  ACBrLibPath: '',
+  ACBrOptions: {
+    fileConfigINI: '',
+    keyCrypt: ''  
+  }
+})

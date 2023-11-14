@@ -2,12 +2,7 @@ import koffi from 'koffi';
 
 import { libError } from '@errors';
 import { IACBrLibNFe } from '@interfaces';
-import { ConsultRegistrationData, DFeDefaultData, DFeDistributionData, DFeDistributionKeyData, FileOrContentData, GenerateKeyData, GetConfigItemValueData, GetPathData, IACBrLibNFeResponse, MakeUnusableData, NFeCancelData, NFeConsultData, NFePositionData, NFeSaveData, NFeSendData, PrintData, ReadSaveImportConfigData, SaveConfigItemValueData, SendMailDefaultData, SendMailEventMailData, UnusablePrintSaveData } from '@types';
-
-export interface IACBrLibNFeOptions{
-  fileConfigINI: string;
-  keyCrypt?: string;
-}
+import { ACBrLibNFeData, ConsultRegistrationData, DFeDefaultData, DFeDistributionData, DFeDistributionKeyData, FileOrContentData, GenerateKeyData, GetConfigItemValueData, GetPathData, IACBrLibNFeOptions, IACBrLibNFeResponse, MakeUnusableData, NFeCancelData, NFeConsultData, NFePositionData, NFeSaveData, NFeSendData, PrintData, ReadSaveImportConfigData, SaveConfigItemValueData, SendMailDefaultData, SendMailEventMailData, UnusablePrintSaveData } from '@types';
 
 const BUFFER_LENGTH = 1024 * 6;
 
@@ -27,16 +22,21 @@ export class ACBrLibNFe implements IACBrLibNFe {
   private ACBrResponse: Buffer = Buffer.alloc(BUFFER_LENGTH);
   private ACBrResponseLength: number[] = [BUFFER_LENGTH];
   private ACBrTypeResponse = ['_Out_ str *ACBrResponse', '_Inout_ int *ACBrResponseLength'];
-  
+
 
   /**
    * Creates an instance of ACBrLibNFe.
-   * @param {{ACBrLibPath:string, ACBrOptions: IACBrLibNFeOptions}} options
+   * @param {ACBrLibNFeData} {ACBrLibPath, ACBrOptions}
+   * @param ACBrLibPath - library path (dll) of the ACBrNFe component 
+   * @param ACBrOptions.fileConfigINI - Location of the INI file, may be 
+   * blank in this case ACBrLib will create a new INI file.
+   * @param ACBrOptions.keyCrypt - Security key to encrypt confidential 
+   * information, it can be blank in this case the default password will be used.
    * @memberof ACBrLibNFe
    */
-  constructor(options: {ACBrLibPath:string, ACBrOptions: IACBrLibNFeOptions}) {
-    this.ACBrLib = koffi.load(options.ACBrLibPath); 
-    this.ACBrOptions = options.ACBrOptions;
+  constructor({ACBrLibPath, ACBrOptions}: ACBrLibNFeData) {
+    this.ACBrLib = koffi.load(ACBrLibPath); 
+    this.ACBrOptions = ACBrOptions;
   }
 
   /**
@@ -50,10 +50,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
     const {fileConfigINI, keyCrypt} = this.ACBrOptions;    
     const data = NFeInit(fileConfigINI, keyCrypt);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Biblioteca foi inicializada corretamente.'
-    }
+    return this.response(data, 'Biblioteca foi inicializada corretamente.');
   }
 
   /**
@@ -66,10 +63,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
     const NFeFinish = this.ACBrLib.func('NFE_Finalizar', 'int', []);
     const data = NFeFinish();
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Biblioteca foi finalizada corretamente.'
-    }
+    return this.response(data, 'Biblioteca foi finalizada corretamente.');
   }
 
   /**
@@ -82,10 +76,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
     const NFeLastResponse = this.ACBrLib.func('NFE_UltimoRetorno', 'int', this.ACBrTypeResponse);
     const data = NFeLastResponse(this.ACBrResponse, this.ACBrResponseLength);    
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
@@ -98,10 +89,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
     const NFeName = this.ACBrLib.func('NFE_Nome', 'int', this.ACBrTypeResponse);
     const data = NFeName(this.ACBrResponse, this.ACBrResponseLength);      
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
@@ -114,98 +102,90 @@ export class ACBrLibNFe implements IACBrLibNFe {
     const NFeVersion = this.ACBrLib.func('NFE_Versao', 'int', this.ACBrTypeResponse);
     const data = NFeVersion(this.ACBrResponse, this.ACBrResponseLength);      
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
    * Method used to read the library configuration from the given INI file.
    *
-   * @param {ReadSaveImportConfigData} [options]
+   * @param {ReadSaveImportConfigData} {fileConfigINI} - INI file to read,
+   * if entered empty the default value will be used.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  readConfig(options?: ReadSaveImportConfigData): IACBrLibNFeResponse {
+  readConfig({fileConfigINI}: ReadSaveImportConfigData): IACBrLibNFeResponse {
     const NFeReadConfig = this.ACBrLib.func('NFE_ConfigLer', 'int', ['string']);
-    const fileConfigINI = options?.fileConfigINI ?? this.ACBrOptions.fileConfigINI;
-    const data = NFeReadConfig(fileConfigINI);      
+    const setFileConfigINI = fileConfigINI ?? this.ACBrOptions.fileConfigINI;
+    const data = NFeReadConfig(setFileConfigINI);      
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Configurações foram lidas corretamente.'
-    }
+    return this.response(data, 'Configurações foram lidas corretamente.');
   }
 
   /**
    * Method used to write the library configuration to the specified INI file.
    *
-   * @param {ReadSaveImportConfigData} [options]
+   * @param {ReadSaveImportConfigData} {fileConfigINI} - INI file to read,
+   * if entered empty the default value will be used.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  saveConfig(options?: ReadSaveImportConfigData): IACBrLibNFeResponse {
+  saveConfig({fileConfigINI}: ReadSaveImportConfigData): IACBrLibNFeResponse {
     const NFeSaveConfig = this.ACBrLib.func('NFE_ConfigGravar', 'int', ['string']);
-    const fileConfigINI = options?.fileConfigINI ?? this.ACBrOptions.fileConfigINI;
-    const data = NFeSaveConfig(fileConfigINI);      
+    const setFileConfigINI = fileConfigINI ?? this.ACBrOptions.fileConfigINI;
+    const data = NFeSaveConfig(setFileConfigINI);      
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Configurações foram gravadas corretamente.'
-    }
+    return this.response(data, 'Configurações foram gravadas corretamente.');
   }
 
   /**
    * Method used to read a specific configuration item.
    *
-   * @param {GetConfigItemValueData} options
+   * @param {GetConfigItemValueData} {sessionINI, key}
+   * @param sessionINI - Configuration session name.
+   * @param key - Session key name.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  getConfigItemValue(options: GetConfigItemValueData): IACBrLibNFeResponse {
+  getConfigItemValue({sessionINI, key}: GetConfigItemValueData): IACBrLibNFeResponse {
     const NFeGetConfigValue = this.ACBrLib.func('NFE_ConfigLerValor', 'int', ['string', 'string', ...this.ACBrTypeResponse]);
-    const data = NFeGetConfigValue(options.sessionINI, options.key, this.ACBrResponse, this.ACBrResponseLength)
+    const data = NFeGetConfigValue(sessionINI, key, this.ACBrResponse, this.ACBrResponseLength)
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
    * Method used to write a specific configuration item.
    *
-   * @param {SaveConfigItemValueData} options
+   * @param {SaveConfigItemValueData} {sessionINI, key, value}
+   * @param sessionINI - Configuration session name.
+   * @param key - Session key name.
+   * @param value - Value to be recorded in the configuration remembering that 
+   * it must be a string value compatible with the configuration.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  saveConfigItemValue(options: SaveConfigItemValueData): IACBrLibNFeResponse {
+  saveConfigItemValue({sessionINI, key, value}: SaveConfigItemValueData): IACBrLibNFeResponse {
     const NFeSaveConfigValue = this.ACBrLib.func('NFE_ConfigGravarValor', 'int', ['string', 'string', 'string']);
-    const data = NFeSaveConfigValue(options.sessionINI, options.key, options.value)
+    const data = NFeSaveConfigValue(sessionINI, key, value);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Configuração gravadas corretamente.'
-    }
+    return this.response(data, 'Configuração gravadas corretamente.');
   }
 
   /**
    * Method used to import the library configuration from the given INI file.
    *
-   * @param {ReadSaveImportConfigData} [options]
+   * @param {ReadSaveImportConfigData} {fileConfigINI}
+   * @param fileConfigINI - INI file to read, if entered empty the default 
+   * value will be used.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  importConfig(options?: ReadSaveImportConfigData): IACBrLibNFeResponse {
+  importConfig({fileConfigINI}: ReadSaveImportConfigData): IACBrLibNFeResponse {
     const NFeImportConfig = this.ACBrLib.func('NFE_ConfigImportar', 'int', ['string']);
-    const fileConfigINI = options?.fileConfigINI ?? this.ACBrOptions.fileConfigINI;
-    const data = NFeImportConfig(fileConfigINI)
+    const setFileConfigINI = fileConfigINI ?? this.ACBrOptions.fileConfigINI;
+    const data = NFeImportConfig(setFileConfigINI)
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Configuração importada corretamente.'
-    }
+    return this.response(data, 'Configuração importada corretamente.');
   }
 
   /**
@@ -218,147 +198,136 @@ export class ACBrLibNFe implements IACBrLibNFe {
     const NFeExportConfig = this.ACBrLib.func('NFE_ConfigExportar', 'int', this.ACBrTypeResponse);
     const data = NFeExportConfig(this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
    * Method used to read the XML file for the ACBrNFe component.
    *
-   * @param {Pick<FileOrContentData, 'fileOrContent'>} options
+   * @param {Pick<FileOrContentData, 'fileOrContent'>} {fileOrContent}
+   * @param fileOrContent - Path with the name of the XML file to be read or 
+   * the content of the XML.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  loadXML(options: Pick<FileOrContentData, 'fileOrContent'>): IACBrLibNFeResponse {
+  loadXML({fileOrContent}: Pick<FileOrContentData, 'fileOrContent'>): IACBrLibNFeResponse {
     const NFeLoadXML = this.ACBrLib.func('NFE_CarregarXML', 'int', ['string']);
-    const data = NFeLoadXML(options.fileOrContent);
+    const data = NFeLoadXML(fileOrContent);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Arquivo/Conteúdo XML carregado corretamente.'
-    }
+    return this.response(data, 'Arquivo/Conteúdo XML carregado corretamente.');
   }
 
   /**
    * Method used to read the INI file for the ACBrNFe component.
    *
-   * @param {Pick<FileOrContentData, 'fileOrContent'>} options
+   * @param {Pick<FileOrContentData, 'fileOrContent'>} {fileOrContent}
+   * @param fileOrContent - Path with the name of the INI file to be read or 
+   * the contents of the INI.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  loadINI(options: Pick<FileOrContentData, 'fileOrContent'>): IACBrLibNFeResponse{
+  loadINI({fileOrContent}: Pick<FileOrContentData, 'fileOrContent'>): IACBrLibNFeResponse{
     const NFeLoadINI = this.ACBrLib.func('NFE_CarregarINI', 'int', ['string']);
-    const data = NFeLoadINI(options.fileOrContent);
+    const data = NFeLoadINI(fileOrContent);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Arquivo/Conteúdo INI carregado corretamente.'
-    }
+    return this.response(data, 'Arquivo/Conteúdo INI carregado corretamente.');
   }
 
 
   /**
    * Method to return the NFe xml.
    *
-   * @param {NFePositionData} options
+   * @param {NFePositionData} {position}
+   * @param position - NFe position in the list, the list starts at 0.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  getXML(options: NFePositionData): IACBrLibNFeResponse{
+  getXML({position}: NFePositionData): IACBrLibNFeResponse{
     const NFeGetXML = this.ACBrLib.func('NFE_ObterXml', 'int', ['int', ...this.ACBrTypeResponse]);
-    const data = NFeGetXML(options.position, this.ACBrResponse, this.ACBrResponseLength);
+    const data = NFeGetXML(position, this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
-  
+
   /**
    * Method to write the NFe xml.
    *
-   * @param {NFeSaveData} options
+   * @param {NFeSaveData} {position, fileName, filhePath}
+   * @param position - NFe position in the list, the list starts at 0.
+   * @param fileName - Name of the XML file to be saved.
+   * @param filhePath - Local onde será salvo o arquivo XML.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  saveXML(options: NFeSaveData): IACBrLibNFeResponse {
+  saveXML({position, fileName, filhePath}: NFeSaveData): IACBrLibNFeResponse {
     const NFeSaveXML = this.ACBrLib.func('NFE_GravarXml', 'int', ['int', 'string', 'string']);
-    const data = NFeSaveXML(options.position, options.fileName, options.filhePath);
+    const data = NFeSaveXML(position, fileName, filhePath);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Arquivo XML gravado corretamente.'
-    }
+    return this.response(data, 'Arquivo XML gravado corretamente.');
   }
   
   /**
    * Method to return the NFe xml in INI format.
    *
-   * @param {NFePositionData} options
+   * @param {NFePositionData} {position}
+   * @param position - NFe position in the list, the list starts at 0.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  getINI(options: NFePositionData): IACBrLibNFeResponse{
+  getINI({position}: NFePositionData): IACBrLibNFeResponse{
     const NFeGetINI = this.ACBrLib.func('NFE_ObterIni', 'int', ['int', ...this.ACBrTypeResponse]);
-    const data = NFeGetINI(options.position, this.ACBrResponse, this.ACBrResponseLength);
+    const data = NFeGetINI(position, this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
-  
+
   /**
    * Method to write the NFe xml in INI format.
    *
-   * @param {NFeSaveData} options
+   * @param {NFeSaveData} {position, fileName, filhePath}
+   * @param position - NFe position in the list, the list starts at 0.
+   * @param fileName - Name of the INI file to be saved.
+   * @param filhePath - Local onde será salvo o arquivo INI.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  saveINI(options: NFeSaveData): IACBrLibNFeResponse {
+  saveINI({position, fileName, filhePath}: NFeSaveData): IACBrLibNFeResponse {
     const NFeSaveINI = this.ACBrLib.func('NFE_GravarIni', 'int', ['int', 'string', 'string']);
-    const data = NFeSaveINI(options.position, options.fileName, options.filhePath);
+    const data = NFeSaveINI(position, fileName, filhePath);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Arquivo INI gravado corretamente.'
-    }
+    return this.response(data, 'Arquivo INI gravado corretamente.');
   }
 
   /**
    * Method used to read the XML file for the ACBrNFe component.
    *
-   * @param {Pick<FileOrContentData, 'fileOrContent'>} options
+   * @param {Pick<FileOrContentData, 'fileOrContent'>} {fileOrContent}
+   * @param fileOrContent - Path with the name of the INI file to be read
+   * or the contents of the INI.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  loadEventXML(options: Pick<FileOrContentData, 'fileOrContent'>): IACBrLibNFeResponse {
+  loadEventXML({fileOrContent}: Pick<FileOrContentData, 'fileOrContent'>): IACBrLibNFeResponse {
     const NFeLoadEventXML = this.ACBrLib.func('NFE_CarregarEventoXML', 'int', ['string']);
-    const data = NFeLoadEventXML(options.fileOrContent);
+    const data = NFeLoadEventXML(fileOrContent);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Arquivo/Conteúdo XML de evento carregado corretamente.'
-    }
+    return this.response(data);
   }
 
   /**
    * Method used to read the INI file for the ACBrNFe component.
    *
-   * @param {Pick<FileOrContentData, 'fileOrContent'>} options
+   * @param {Pick<FileOrContentData, 'fileOrContent'>} {fileOrContent}
+   * @param fileOrContent - Path with the name of the INI file to be read
+   * or the contents of the INI.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  loadEventINI(options: Pick<FileOrContentData, 'fileOrContent'>): IACBrLibNFeResponse {
+  loadEventINI({fileOrContent}: Pick<FileOrContentData, 'fileOrContent'>): IACBrLibNFeResponse {
     const NFeLoadEventINI = this.ACBrLib.func('NFE_CarregarEventoINI', 'int', ['string']);
-    const data = NFeLoadEventINI(options.fileOrContent);
+    const data = NFeLoadEventINI(fileOrContent);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Arquivo/Conteúdo INI de evento carregado corretamente.'
-    }
+    return this.response(data);
   }
 
   /**
@@ -371,10 +340,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
     const NFeClearList = this.ACBrLib.func('NFE_LimparLista', 'int', []);
     const data = NFeClearList();
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Lista de notas foi limpo corretamente.'
-    }
+    return this.response(data);
   }
 
   /**
@@ -387,10 +353,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
     const NFeClearEventList = this.ACBrLib.func('NFE_LimparListaEventos', 'int', []);
     const data = NFeClearEventList();
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Lista de eventos foi limpo corretamente.'
-    }
+    return this.response(data);
   }
 
   /**
@@ -403,10 +366,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
     const NFeSign = this.ACBrLib.func('NFE_Assinar', 'int', []);
     const data = NFeSign();
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Notas carregadas assinadas corretamente.'
-    }
+    return this.response(data);
   }
 
   /**
@@ -419,10 +379,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
     const NFeValidate = this.ACBrLib.func('NFE_Validar', 'int', []);
     const data = NFeValidate();
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Notas carregadas validadas corretamente.'
-    }
+    return this.response(data);
   }
 
   /**
@@ -436,10 +393,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
     const NFeValidateBusinessRules = this.ACBrLib.func('NFE_ValidarRegrasdeNegocios', 'int', this.ACBrTypeResponse);
     const data = NFeValidateBusinessRules(this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
@@ -452,27 +406,31 @@ export class ACBrLibNFe implements IACBrLibNFe {
     const NFeVerifySignature = this.ACBrLib.func('NFE_VerificarAssinatura', 'int', this.ACBrTypeResponse);
     const data = NFeVerifySignature(this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
    * Method used to generate a key to the fiscal document.
    *
-   * @param {GenerateKeyData} options
+   * @param {GenerateKeyData} {UFCode, numericCode, model, serie, numberNFe, typeEmission, dateEmission, document}
+   * @param UFCode - UF code to generate the key.
+   * @param numericCode - Numeric code of the invoice.
+   * @param model - Document model 55 or 65.
+   * @param serie - Invoice series.
+   * @param numberNFe - Invoice number.
+   * @param typeEmission - Type of Emission: 1 = teNormal, 2 = teContingencia, 
+   * 3 = teSCAN, 4 = teDPEC, 5 = teFSDA, 6 = teSVCAN, 7 = teSVCRS, 
+   * 8 = teSVCSP, 9 = teOffLine
+   * @param dateEmission - 
+   * @param document - 
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  generateKey(options: GenerateKeyData): IACBrLibNFeResponse {
+  generateKey({UFCode, numericCode, model, serie, numberNFe, typeEmission, dateEmission, document}: GenerateKeyData): IACBrLibNFeResponse {
     const NFeGenerateKey = this.ACBrLib.func('NFE_GerarChave', 'int', ['int', 'int', 'int', 'int', 'int', 'int', 'string', 'string', ...this.ACBrTypeResponse]);
-    const data = NFeGenerateKey(options.UFCode, options.numericCode, options.model, options.serie, options.numberNFe, options.typeEmission, options.dateEmission, options.document, this.ACBrResponse, this.ACBrResponseLength);
+    const data = NFeGenerateKey(UFCode, numericCode, model, serie, numberNFe, typeEmission, dateEmission, document, this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
@@ -490,46 +448,40 @@ export class ACBrLibNFe implements IACBrLibNFe {
     const NFeGetCertificates = this.ACBrLib.func('NFE_ObterCertificados', 'int', this.ACBrTypeResponse);
     const data = NFeGetCertificates(this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
-   * Method used to return the path where the 
-   * documents generated by the library will be saved.
+   * Method used to return the path where the documents generated by the 
+   * library will be saved.
    *
-   * @param {GetPathData} options
+   * @param {GetPathData} {pathType}
+   * @param pathType - Type of path that will be returned: 0 = NFe,
+   * 1 = Inutilização, 2 = CCe, 3 = Cancelamento.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  getPath(options: GetPathData): IACBrLibNFeResponse {
+  getPath({pathType}: GetPathData): IACBrLibNFeResponse {
     const NFeGetPath = this.ACBrLib.func('NFE_GetPath', 'int', ['int', ...this.ACBrTypeResponse]);
-    const data = NFeGetPath(options.pathType, this.ACBrResponse, this.ACBrResponseLength);
+    const data = NFeGetPath(pathType, this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
-   * Method used to return the path where the
-   * events generated by the library will be saved.
+   * Method used to return the path where the events generated by the 
+   * library will be saved.
    *
-   * @param {{ eventCode: number }} options
+   * @param {{ eventCode: number }} {eventCode}
+   * @param eventCode - The event code.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  getEventPath(options: { eventCode: number }): IACBrLibNFeResponse {
+  getEventPath({eventCode}: { eventCode: number }): IACBrLibNFeResponse {
     const NFeGetEventPath = this.ACBrLib.func('NFE_GetPathEvento', 'int', ['int', ...this.ACBrTypeResponse]);
-    const data = NFeGetEventPath(options.eventCode, this.ACBrResponse, this.ACBrResponseLength);
+    const data = NFeGetEventPath(eventCode, this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
@@ -542,129 +494,130 @@ export class ACBrLibNFe implements IACBrLibNFe {
     const NFeCheckServiceStatus = this.ACBrLib.func('NFE_StatusServico', 'int', this.ACBrTypeResponse);
     const data = NFeCheckServiceStatus(this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
    * Method used to consult an NFe at SEFAZ.
    *
-   * @param {NFeConsultData} options
+   * @param {NFeConsultData} {keyOrContent, isEventsExtract}
+   * @param keyOrContent - Path with the name of the XML file to be consulted 
+   * or the content of the XML.
+   * @param isEventsExtract - Inform whether or not to extract the events, 
+   * if they exist in the response.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  consult(options: NFeConsultData): IACBrLibNFeResponse {
+  consult({keyOrContent, isEventsExtract}: NFeConsultData): IACBrLibNFeResponse {
     const NFeConsult = this.ACBrLib.func('NFE_Consultar', 'int', ['string', 'bool', ...this.ACBrTypeResponse]);
-    const data = NFeConsult(options.keyOrContent, options.isEventsExtract, this.ACBrResponse, this.ACBrResponseLength);
+    const data = NFeConsult(keyOrContent, isEventsExtract, this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
    * Method used to consult the shipping receipt at SEFAZ.
    *
-   * @param {{receipt: string}} options
+   * @param {{receipt: string}} {receipt}
+   * @param receipt - Receipt number for consultation.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  consultReceipt(options: {receipt: string}): IACBrLibNFeResponse {
+  consultReceipt({receipt}: {receipt: string}): IACBrLibNFeResponse {
     const NFeConsultReceipt = this.ACBrLib.func('NFE_ConsultarRecibo', 'int', ['string',...this.ACBrTypeResponse]);
-    const data = NFeConsultReceipt(options.receipt, this.ACBrResponse, this.ACBrResponseLength);
+    const data = NFeConsultReceipt(receipt, this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
    * Method used to consult the SEFAZ registry.
    *
-   * @param {ConsultRegistrationData} options
+   * @param {ConsultRegistrationData} {UF, document, isIECode}
+   * @param UF - Acronym of the state of the document to be consulted.
+   * @param document - Number of the document to be consulted.
+   * @param isIECode - If true, you will query the State Registration document, 
+   * otherwise you will query the CPF or CNPJ.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  consultRegistration(options: ConsultRegistrationData): IACBrLibNFeResponse {
+  consultRegistration({UF, document, isIECode}: ConsultRegistrationData): IACBrLibNFeResponse {
     const NFeConsultRegistration = this.ACBrLib.func('NFE_ConsultaCadastro', 'int', ['string', 'string', 'bool', ...this.ACBrTypeResponse]);
-    const data = NFeConsultRegistration(options.UF, options.document, options.isIECode, this.ACBrResponse, this.ACBrResponseLength);
+    const data = NFeConsultRegistration(UF, document, isIECode, this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
   
   /**
    * Method used to make a number or range of numbers unusable in SEFAZ.
    *
-   * @param {MakeUnusableData} options
+   * @param {MakeUnusableData} {document, justification, year, model, serie, initialNumber, finalNumber}
+   * @param document - CNPJ of the issuer.
+   * @param justification - Reason for requesting Disablement.
+   * @param year - Year.
+   * @param model - Model must be entered 55 for NF-e or 65 for NFC-e.
+   * @param serie - Tax Document Series.
+   * @param initialNumber - Initial number you wish to unusable.
+   * @param finalNumber - Final Number if you wish to unusable.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  makeUnusable(options: MakeUnusableData): IACBrLibNFeResponse {
+  makeUnusable({document, justification, year, model, serie, initialNumber, finalNumber}: MakeUnusableData): IACBrLibNFeResponse {
     const NFeMakeUnusable = this.ACBrLib.func('NFE_Inutilizar', 'int', ['string', 'string', 'int', 'int', 'int', 'int', 'int', ...this.ACBrTypeResponse]);
-    const data = NFeMakeUnusable(options.document, options.justification, options.year, options.model, options.serie, options.initialNumber, options.finalNumber, this.ACBrResponse, this.ACBrResponseLength);
+    const data = NFeMakeUnusable(document, justification, year, model, serie, initialNumber, finalNumber, this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
    * Method used to send a batch of NFe to SEFAZ.
    *
-   * @param {NFeSendData} options
+   * @param {NFeSendData} {batchNumber, isPrint, isSynchronous, isZipped}
+   * @param batchNumber - Batch number of the cancellation event.
+   * @param isPrint - If True prints the DANFe if the NF-e is authorized.
+   * @param isSynchronous - If True prints it sends it in synchronous mode.
+   * @param isZipped - If True prints and sends the zipped file.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  send(options: NFeSendData): IACBrLibNFeResponse {
+  send({batchNumber, isPrint, isSynchronous, isZipped}: NFeSendData): IACBrLibNFeResponse {
     const NFeSend = this.ACBrLib.func('NFE_Enviar', 'int', ['int', 'bool', 'bool', 'bool', ...this.ACBrTypeResponse]);
-    const data = NFeSend(options.batchNumber, options.isPrint, options.isSynchronous, options.isZipped, this.ACBrResponse, this.ACBrResponseLength);
+    const data = NFeSend(batchNumber, isPrint, isSynchronous, isZipped, this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
    * Method used to cancel an NFe at SEFAZ.
    *
-   * @param {NFeCancelData} options
+   * @param {NFeCancelData} {NFeKey, justification, document, batchNumber}
+   * @param NFeKey - XML access key to be canceled.
+   * @param justification - Reason for cancellation.
+   * @param document - CNPJ of the issuer.
+   * @param batchNumber - Batch number of the cancellation event.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  cancel(options: NFeCancelData): IACBrLibNFeResponse {
+  cancel({NFeKey, justification, document, batchNumber}: NFeCancelData): IACBrLibNFeResponse {
     const NFeCancel = this.ACBrLib.func('NFE_Cancelar', 'int', ['string', 'string', 'string', 'int', ...this.ACBrTypeResponse]);
-    const data = NFeCancel(options.NFeKey, options.justification, options.document, options.batchNumber, this.ACBrResponse, this.ACBrResponseLength);
+    const data = NFeCancel(NFeKey, justification, document, batchNumber, this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
    * Method used to Send an Event to SEFAZ.
    *
-   * @param {{batchNumber: number}} options
+   * @param {{batchNumber: number}} {batchNumber}
+   * @param batchNumber - Lot number of the event.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  eventSend(options:{batchNumber: number}): IACBrLibNFeResponse {
+  eventSend({batchNumber}: {batchNumber: number}): IACBrLibNFeResponse {
     const NFeEventSend = this.ACBrLib.func('NFE_EnviarEvento', 'int', ['int', ...this.ACBrTypeResponse]);
-    const data = NFeEventSend(options.batchNumber, this.ACBrResponse, this.ACBrResponseLength);
+    const data = NFeEventSend(batchNumber, this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
@@ -672,123 +625,158 @@ export class ACBrLibNFe implements IACBrLibNFe {
    * the DistribuicaoDFe method informing the last NSU returned by the
    * previous execution.
    *
-   * @param {DFeDistributionData} options
+   * @param {DFeDistributionData} {UFCode, document, NSU, fileOrContent}
+   * @param UFCode - UF code of the query author.
+   * @param document - CNPJ/CPF of the author of the query.
+   * @param NSU - NSU number of the document.
+   * @param fileOrContent - Path with the name of the XML file to be read or 
+   * the content of the XML.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  DFeDistribution(options: DFeDistributionData): IACBrLibNFeResponse {
+  DFeDistribution({UFCode, document, NSU, fileOrContent}: DFeDistributionData): IACBrLibNFeResponse {
     const NFeDFeDistribution = this.ACBrLib.func('NFE_DistribuicaoDFe', 'int', ['int', 'string', 'string', 'string', ...this.ACBrTypeResponse]);
-    const data = NFeDFeDistribution(options.UFCode, options.document, options.NSU, options.fileOrContent, this.ACBrResponse, this.ACBrResponseLength);
+    const data = NFeDFeDistribution(UFCode, document, NSU, fileOrContent, this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
    * Method used to Download documents from the National Environment through the DistribuicaoDFe method informing 
    * the last NSU returned by the previous execution.
    *
-   * @param {DFeDefaultData} options
+   * @param {DFeDefaultData} {UFCode, document, NSU}
+   * @param UFCode - UF code of the query author.
+   * @param document - CNPJ/CPF of the author of the query.
+   * @param NSU - NSU number of the document.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  DFeDistributionLastNSU(options: DFeDefaultData): IACBrLibNFeResponse {
+  DFeDistributionLastNSU({UFCode, document, NSU}: DFeDefaultData): IACBrLibNFeResponse {
     const NFeDFeDistributionLastNSU = this.ACBrLib.func('NFE_DistribuicaoDFePorUltNSU', 'int', ['int', 'string', 'string', ...this.ACBrTypeResponse]);
-    const data = NFeDFeDistributionLastNSU(options.UFCode, options.document, options.NSU, this.ACBrResponse, this.ACBrResponseLength);
+    const data = NFeDFeDistributionLastNSU(UFCode, document, NSU, this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
+
 
   /**
    * Method used to Download the National Environment document through the 
    * DistribuicaoDFe method informing your NSU.
    *
-   * @param {DFeDefaultData} options
+   * @param {DFeDefaultData} {UFCode, document, NSU}
+   * @param UFCode - UF code of the query author.
+   * @param document - CNPJ/CPF of the author of the query.
+   * @param NSU - NSU number of the document.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  DFeDistributionNSU(options: DFeDefaultData): IACBrLibNFeResponse {
+  DFeDistributionNSU({UFCode, document, NSU}: DFeDefaultData): IACBrLibNFeResponse {
     const NFeDFeDistributionNSU = this.ACBrLib.func('NFE_DistribuicaoDFePorNSU', 'int', ['int', 'string', 'string', ...this.ACBrTypeResponse]);
-    const data = NFeDFeDistributionNSU(options.UFCode, options.document, options.NSU, this.ACBrResponse, this.ACBrResponseLength);
+    const data = NFeDFeDistributionNSU(UFCode, document, NSU, this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
    * Method used to Download the NFe from the National Environment through the 
    * DistribuicaoDFe method, informing your key.
    *
-   * @param {DFeDistributionKeyData} options
-   * @return {*} 
+   * @param {DFeDistributionKeyData} {UFCode, document, key}
+   * @param UFCode - UF code of the query author.
+   * @param document - CNPJ/CPF of the author of the query.
+   * @param key - NFe key.
+   * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  DFeDistributionKey(options: DFeDistributionKeyData) {
+  DFeDistributionKey({UFCode, document, key}: DFeDistributionKeyData): IACBrLibNFeResponse {
     const NFeDFeDistributionKey = this.ACBrLib.func('NFE_DistribuicaoDFePorChave', 'int', ['int', 'string', 'string', ...this.ACBrTypeResponse]);
-    const data = NFeDFeDistributionKey(options.UFCode, options.document, options.key, this.ACBrResponse, this.ACBrResponseLength);
+    const data = NFeDFeDistributionKey(UFCode, document, key, this.ACBrResponse, this.ACBrResponseLength);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
    * Method used to send email through the ACBrNFe component.
    *
-   * @param {SendMailDefaultData} options
+   * @param {SendMailEventMailData} {from, XMLPath, isSendPDF, subject, CC, attachments, message}
+   * @param from - Recipient.
+   * @param XMLPath - Path with the name of the NFe XML file to be 
+   * attached to the email.
+   * @param isSendPDF - If True generates the DANFe PDF and 
+   * attaches it to the email.
+   * @param subject - Text containing the subject of the email.
+   * @param CC - addresses separated by semicolons that will receive a 
+   * copy of the email.
+   * @param attachments - Path with the name of files separated by semicolons 
+   * to be attached to the email.
+   * @param message - Text referring to the email message.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  sendMail(options: SendMailDefaultData): IACBrLibNFeResponse {
+  sendMail({from, XMLPath, isSendPDF, subject, CC, attachments, message}: SendMailDefaultData): IACBrLibNFeResponse {
     const NFeSendMail = this.ACBrLib.func('NFE_EnviarEmail', 'int', ['string', 'string', 'bool', 'string', 'string', 'string', 'string']);
-    const data = NFeSendMail(options.from, options.XMLPath, options.isSendPDF, options.subject, options.CC, options.attachments, options.message);
+    const data = NFeSendMail(from, XMLPath, isSendPDF, subject, CC, attachments, message);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'E-mail enviado corretamente.'
-    }
+    return this.response(data, 'E-mail enviado corretamente.');
   }
 
   /**
    * Method used to send event by email through the ACBrNFe component.
    *
-   * @param {SendMailEventMailData} options
+   * @param {SendMailEventMailData} {from, eventPath, XMLPath, isSendPDF, subject, CC, attachments, message}
+   * @param from - Recipient.
+   * @param eventPath - Path with the name of the Event XML file to be 
+   * attached to the email.
+   * @param XMLPath - Path with the name of the NFe XML file to be 
+   * attached to the email.
+   * @param isSendPDF - If True generates the DANFe PDF and 
+   * attaches it to the email.
+   * @param subject - Text containing the subject of the email.
+   * @param CC - addresses separated by semicolons that will receive a 
+   * copy of the email.
+   * @param attachments - Path with the name of files separated by semicolons 
+   * to be attached to the email.
+   * @param message - Text referring to the email message.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  sendEventMail(options: SendMailEventMailData): IACBrLibNFeResponse {
+  sendEventMail({from, eventPath, XMLPath, isSendPDF, subject, CC, attachments, message}: SendMailEventMailData): IACBrLibNFeResponse {
     const NFeSendEventMail = this.ACBrLib.func('NFE_EnviarEmailEvento', 'int', ['string', 'string', 'string', 'bool', 'string', 'string', 'string', 'string']);
-    const data = NFeSendEventMail(options.from, options.eventPath, options.XMLPath, options.isSendPDF, options.subject, options.CC, options.attachments, options.message);
+    const data = NFeSendEventMail(from, eventPath, XMLPath, isSendPDF, subject, CC, attachments, message);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'E-mail enviado corretamente.'
-    }
+    return this.response(data, 'E-mail do evento enviado corretamente.');
   }
 
   /**
    * Method used to print the DANFe/DANFCe of the loaded NFes/NFCes.
    *
-   * @param {PrintData} options
+   * @param {PrintData} {printName, numberCopies, protocol, isShowPreview, pathWaterMark, isViaConsumer, isSimplified}
+   * @param printName - Name of the printer where the document will be printed, 
+   * if not entered, the printer entered in the settings will be used.
+   * @param numberCopies - Number of copies to be printed, enter zero to use 
+   * the value entered in the settings.
+   * @param protocol - NFe protocol number.
+   * @param isShowPreview - If entered "yes" will display the preview, 
+   * if "no" does not want to show it or empty to use the 
+   * configuration values.
+   * @param pathWaterMark - Defines the path of the image that will be used 
+   * as a watermark when printing DANFe, otherwise the 
+   * configuration value will be used.
+   * @param isViaConsumer - If entered "yes" prints the consumer's copy,
+   * if "no" otherwise shows or empty to use the configuration values,
+   * valid only for NFCe.
+   * @param isViaConsumer - If "yes" is entered, it prints the DANFCe in 
+   * a simplified way, if "no" otherwise it is displayed or empty to use 
+   * the configuration values, valid only for NFCe.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  print(options: PrintData): IACBrLibNFeResponse {
+  print({printName, numberCopies, protocol, isShowPreview, pathWaterMark, isViaConsumer, isSimplified}: PrintData): IACBrLibNFeResponse {
     const NFePrint = this.ACBrLib.func('NFE_Imprimir', 'int', ['string', 'int', 'string', 'string', 'string', 'string', 'string']);
-    const data = NFePrint(options.printName, options.numberCopies, options.protocol, options.isShowPreview, options.pathWaterMark, options.isViaConsumer, options.isSimplified);
+    const data = NFePrint(printName, numberCopies, protocol, isShowPreview, pathWaterMark, isViaConsumer, isSimplified);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Impresso corretamente.'
-    }
+    return this.response(data, 'Impresso corretamente.');
   }
 
   /**
@@ -801,10 +789,7 @@ export class ACBrLibNFe implements IACBrLibNFe {
     const NFePrintPDF = this.ACBrLib.func('NFE_ImprimirPDF', 'int', []);
     const data = NFePrintPDF();
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'PDF Impresso corretamente.'
-    }
+    return this.response(data, 'PDF Impresso corretamente.');
   }
 
   /**
@@ -817,111 +802,126 @@ export class ACBrLibNFe implements IACBrLibNFe {
     const NFeSavePDF = this.ACBrLib.func('NFE_SalvarPDF', 'int', this.ACBrTypeResponse);
     const data = NFeSavePDF();
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : this.ACBrResponse.toString()
-    }
+    return this.response(data);
   }
 
   /**
    * Method used to print an event.
    *
-   * @param {FileOrContentData} options
+   * @param {FileOrContentData} {fileOrContent, eventFileOrContent}
+   * @param fileOrContent - Path of the NFe XML file for Base64 format.
+   * @param eventFileOrContent - Path of the event XML file to Base64 format.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  eventPrint(options: FileOrContentData): IACBrLibNFeResponse {
+  eventPrint({fileOrContent, eventFileOrContent}: FileOrContentData): IACBrLibNFeResponse {
     const NFeEventPrint = this.ACBrLib.func('NFE_ImprimirEvento', 'int', ['string', 'string']);
-    const data = NFeEventPrint(options.fileOrContent, options.eventFileOrContent);
+    const data = NFeEventPrint(fileOrContent, eventFileOrContent);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Evento impresso corretamente.'
-    }
+    return this.response(data, 'Evento impresso corretamente.');
   }
 
   /**
    * Method used to generate the PDF of an event.
    *
-   * @param {FileOrContentData} options
+   * @param {FileOrContentData} {fileOrContent, eventFileOrContent}
+   * @param fileOrContent - Path of the NFe XML file for Base64 format.
+   * @param eventFileOrContent - Path of the event XML file to Base64 format.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  eventPrintPDF(options: FileOrContentData): IACBrLibNFeResponse {
+  eventPrintPDF({fileOrContent, eventFileOrContent}: FileOrContentData): IACBrLibNFeResponse {
     const NFeEventPrintPDF = this.ACBrLib.func('NFE_ImprimirEventoPDF', 'int', ['string', 'string']);
-    const data = NFeEventPrintPDF(options.fileOrContent, options.eventFileOrContent);
+    const data = NFeEventPrintPDF(fileOrContent, eventFileOrContent);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'PDF do evento impresso corretamente.'
-    }
+    return this.response(data, 'PDF do evento impresso corretamente.');
   }
 
   /**
    * Method used to save the PDF of an event in Base64 format.
    *
-   * @param {FileOrContentData} options
+   * @param {FileOrContentData} {fileOrContent, eventFileOrContent}
+   * @param fileOrContent - Path of the NFe XML file for Base64 format.
+   * @param eventFileOrContent - Path of the event XML file to Base64 format.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  saveEventPDF(options: FileOrContentData): IACBrLibNFeResponse {
+  saveEventPDF({fileOrContent, eventFileOrContent}: FileOrContentData): IACBrLibNFeResponse {
     const NFeSaveEventPDF = this.ACBrLib.func('NFE_SalvarEventoPDF', 'int', ['string', 'string']);
-    const data = NFeSaveEventPDF(options.fileOrContent, options.eventFileOrContent);
+    const data = NFeSaveEventPDF(fileOrContent, eventFileOrContent);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'PDF do evento impresso corretamente.'
-    }
+    return this.response(data, 'PDF do evento foi salvo corretamente.');
   }
 
   /**
    * Method used to print the unusable number NFe.
    *
-   * @param {UnusablePrintSaveData} options
+   * @param {UnusablePrintSaveData} {pathXMLFile}
+   * @param pathXMLFile - Path of the unusable XML file for Base64 format.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  printUnusable(options: UnusablePrintSaveData): IACBrLibNFeResponse {
+  printUnusable({pathXMLFile}: UnusablePrintSaveData): IACBrLibNFeResponse {
     const NFePrintUnusable = this.ACBrLib.func('NFE_ImprimirInutilizacao', 'int', ['string']);
-    const data = NFePrintUnusable(options.pathXMLFile);
-
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'Inutilização impressa corretamente.'
-    }
+    const data = NFePrintUnusable(pathXMLFile);
+    
+    return this.response(data, 'Inutilização foi impressa corretamente.');
   }
 
   /**
    * Method used to generate the PDF of the Unusable
-   *
-   * @param {UnusablePrintSaveData} options
+   * 
+   * @param {UnusablePrintSaveData} {pathXMLFile}
+   * @param pathXMLFile - Path of the unusable XML file for Base64 format.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  printUnusablePDF(options: UnusablePrintSaveData): IACBrLibNFeResponse {
+  printUnusablePDF({pathXMLFile}: UnusablePrintSaveData): IACBrLibNFeResponse {
     const NFePrintUnusablePDF = this.ACBrLib.func('NFE_ImprimirInutilizacaoPDF', 'int', ['string']);
-    const data = NFePrintUnusablePDF(options.pathXMLFile);
+    const data = NFePrintUnusablePDF(pathXMLFile);
 
-    return {
-      ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'PDF da inutilização impresso corretamente.'
-    }
+    return this.response(data, 'PDF da inutilização foi impresso corretamente');
   }
 
   /**
    * Method used to save the Unusable PDF in Base64 format.
    *
-   * @param {UnusablePrintSaveData} options
+   * @param {UnusablePrintSaveData} {pathXMLFile}
+   * @param pathXMLFile - Path of the unusable XML file for Base64 format.
    * @return {*}  {IACBrLibNFeResponse}
    * @memberof ACBrLibNFe
    */
-  saveUnusablePDF(options: UnusablePrintSaveData): IACBrLibNFeResponse {
+  saveUnusablePDF({pathXMLFile}: UnusablePrintSaveData): IACBrLibNFeResponse {
     const NFeSaveUnusablePDF = this.ACBrLib.func('NFE_SalvarInutilizacaoPDF', 'int', ['string']);
-    const data = NFeSaveUnusablePDF(options.pathXMLFile);
+    const data = NFeSaveUnusablePDF(pathXMLFile);
 
+    return this.response(data, 'PDF da inutilização foi salvo corretamente.');
+  }
+
+
+  /**
+   * Private method to get data and make a responses
+   *
+   * @private
+   * @param {*} data
+   * @param {string} [message]
+   * @return {*}  {IACBrLibNFeResponse}
+   * @memberof ACBrLibNFe
+   */
+  private response(data: any, message?: string): IACBrLibNFeResponse {
+    let ACBrResponse= message ?? ''; 
+
+    if(message) {
+      ACBrResponse = this.ACBrResponse.toString()
+    }
+    
+    if(data !== 0) {
+      ACBrResponse = libError(data);
+    }
+    
     return {
       ACBrCode: data,
-      ACBrResponse: data !== 0 ? libError(data) : 'PDF da inutilização salvo corretamente.'
+      ACBrResponse
     }
   }
 }
