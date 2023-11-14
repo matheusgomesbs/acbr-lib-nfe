@@ -61,7 +61,7 @@ export interface IACBrLibNFe {
 }
 
 export interface INFe {
-  consult(): void;
+  consult(options: NFeConsultData): void;
   send(): void;
   cancel(): void;
   unusable(): void;

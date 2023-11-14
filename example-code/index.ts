@@ -1,4 +1,4 @@
-import { ACBrLibNFe, IACBrLibNFeOptions } from '@index';
+import { ACBrLibNFe, IACBrLibNFeOptions } from '@ACBrLibNFe';
 import path from 'node:path';
 
 const ACBrLibPath = path.join(__dirname, 'bin', 'StdCall', 'ACBrNFe64.dll');
